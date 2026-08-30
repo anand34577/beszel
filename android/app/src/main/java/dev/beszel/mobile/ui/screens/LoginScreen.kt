@@ -1,6 +1,5 @@
 package dev.beszel.mobile.ui.screens
 
-import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -54,6 +53,8 @@ import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.text.input.VisualTransformation
 import androidx.compose.ui.unit.dp
 import dev.beszel.mobile.R
+import dev.beszel.mobile.data.BeszelApi
+import dev.beszel.mobile.ui.components.BeszelCard
 import dev.beszel.mobile.ui.components.BeszelMark
 import dev.beszel.mobile.ui.theme.BrandMint
 import dev.beszel.mobile.ui.theme.BrandViolet
@@ -76,8 +77,16 @@ fun LoginScreen(
     val passwordError = stringResource(R.string.login_error_password)
 
     fun submit() {
+        // Same parsing BeszelApi.login() would do; catch a malformed URL here
+        // instead of round-tripping to the network to find out.
+        val urlFormatError = if (hubUrl.isBlank()) {
+            null
+        } else {
+            runCatching { BeszelApi.normalizeHubUrl(hubUrl) }.exceptionOrNull()?.message
+        }
         validationMessage = when {
             hubUrl.isBlank() -> urlError
+            urlFormatError != null -> urlFormatError
             email.isBlank() -> emailError
             password.isBlank() -> passwordError
             else -> null
@@ -136,12 +145,7 @@ fun LoginScreen(
                 color = MaterialTheme.colorScheme.onSurfaceVariant,
             )
             Spacer(Modifier.height(30.dp))
-            Surface(
-                modifier = Modifier.fillMaxWidth(),
-                color = MaterialTheme.colorScheme.surfaceContainerLow,
-                shape = MaterialTheme.shapes.extraLarge,
-                border = BorderStroke(1.dp, MaterialTheme.colorScheme.outlineVariant),
-            ) {
+            BeszelCard(shape = MaterialTheme.shapes.extraLarge) {
                 Column(Modifier.padding(24.dp), verticalArrangement = Arrangement.spacedBy(16.dp)) {
                     OutlinedTextField(
                         value = hubUrl,

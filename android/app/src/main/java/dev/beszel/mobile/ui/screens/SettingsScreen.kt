@@ -3,7 +3,6 @@ package dev.beszel.mobile.ui.screens
 import android.content.Intent
 import android.net.Uri
 import android.os.Build
-import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
@@ -29,7 +28,6 @@ import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedButton
-import androidx.compose.material3.Surface
 import androidx.compose.material3.Switch
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
@@ -49,6 +47,7 @@ import dev.beszel.mobile.AppUiState
 import dev.beszel.mobile.BuildConfig
 import dev.beszel.mobile.R
 import dev.beszel.mobile.data.ThemeMode
+import dev.beszel.mobile.ui.components.BeszelCard
 import dev.beszel.mobile.ui.components.SegmentedControl
 import dev.beszel.mobile.ui.theme.dataMedium
 import dev.beszel.mobile.ui.theme.dataSmall
@@ -82,12 +81,7 @@ fun SettingsScreen(
         item {
             SectionLabel(stringResource(R.string.settings_connection))
             Spacer(Modifier.height(8.dp))
-            Surface(
-                modifier = Modifier.fillMaxWidth(),
-                shape = MaterialTheme.shapes.large,
-                color = MaterialTheme.colorScheme.surfaceContainerLow,
-                border = BorderStroke(1.dp, MaterialTheme.colorScheme.outlineVariant),
-            ) {
+            BeszelCard {
                 Column {
                     SettingsRow(Icons.Rounded.Cloud, stringResource(R.string.settings_hub), state.session?.hubUrl.orEmpty())
                     Divider()
@@ -123,12 +117,7 @@ fun SettingsScreen(
         item {
             SectionLabel(stringResource(R.string.settings_appearance))
             Spacer(Modifier.height(8.dp))
-            Surface(
-                modifier = Modifier.fillMaxWidth(),
-                shape = MaterialTheme.shapes.large,
-                color = MaterialTheme.colorScheme.surfaceContainerLow,
-                border = BorderStroke(1.dp, MaterialTheme.colorScheme.outlineVariant),
-            ) {
+            BeszelCard {
                 Column(Modifier.padding(16.dp), verticalArrangement = Arrangement.spacedBy(14.dp)) {
                     SegmentedControl(
                         options = ThemeMode.entries.toList(),
@@ -158,12 +147,7 @@ fun SettingsScreen(
         item {
             SectionLabel(stringResource(R.string.settings_about))
             Spacer(Modifier.height(8.dp))
-            Surface(
-                modifier = Modifier.fillMaxWidth(),
-                shape = MaterialTheme.shapes.large,
-                color = MaterialTheme.colorScheme.surfaceContainerLow,
-                border = BorderStroke(1.dp, MaterialTheme.colorScheme.outlineVariant),
-            ) {
+            BeszelCard {
                 Column(Modifier.padding(16.dp)) {
                     Row(verticalAlignment = Alignment.Top) {
                         Icon(

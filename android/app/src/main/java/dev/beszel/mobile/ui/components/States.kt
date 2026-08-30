@@ -1,11 +1,5 @@
 package dev.beszel.mobile.ui.components
 
-import androidx.compose.animation.core.RepeatMode
-import androidx.compose.animation.core.animateFloat
-import androidx.compose.animation.core.infiniteRepeatable
-import androidx.compose.animation.core.rememberInfiniteTransition
-import androidx.compose.animation.core.tween
-import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer
@@ -22,7 +16,6 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.graphicsLayer
@@ -30,24 +23,12 @@ import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
-import dev.beszel.mobile.ui.theme.rememberReducedMotion
+import dev.beszel.mobile.ui.theme.rememberPulse
 
 /** Brand splash shown while the session restores. */
 @Composable
 fun SplashState(modifier: Modifier = Modifier) {
-    val reducedMotion = rememberReducedMotion()
-    val scale: Float = if (reducedMotion) {
-        1f
-    } else {
-        val transition = rememberInfiniteTransition(label = "splash")
-        val value by transition.animateFloat(
-            initialValue = 0.96f,
-            targetValue = 1.04f,
-            animationSpec = infiniteRepeatable(tween(1300), RepeatMode.Reverse),
-            label = "splash-scale",
-        )
-        value
-    }
+    val scale = rememberPulse(initialValue = 0.96f, targetValue = 1.04f, durationMillis = 1300, label = "splash", restValue = 1f)
     Column(
         modifier = modifier.fillMaxSize(),
         horizontalAlignment = Alignment.CenterHorizontally,
@@ -74,12 +55,7 @@ fun EmptyState(
     actionLabel: String? = null,
     onAction: (() -> Unit)? = null,
 ) {
-    Surface(
-        modifier = modifier.fillMaxWidth(),
-        shape = MaterialTheme.shapes.large,
-        color = MaterialTheme.colorScheme.surfaceContainerLow,
-        border = BorderStroke(1.dp, MaterialTheme.colorScheme.outlineVariant),
-    ) {
+    BeszelCard(modifier = modifier) {
         Column(
             Modifier.fillMaxWidth().padding(32.dp),
             horizontalAlignment = Alignment.CenterHorizontally,

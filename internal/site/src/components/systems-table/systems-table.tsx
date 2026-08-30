@@ -24,6 +24,8 @@ import {
 	LayoutGridIcon,
 	LayoutListIcon,
 	RotateCcwIcon,
+	SearchIcon,
+	SearchXIcon,
 	Settings2Icon,
 	XIcon,
 } from "lucide-react"
@@ -49,12 +51,31 @@ import type { SystemRecord } from "@/types"
 import AlertButton from "../alerts/alert-button"
 import { $router, Link } from "../router"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "../ui/card"
-import { SystemsTableColumns, ActionsButton, IndicatorDot } from "./systems-table-columns"
+import { SystemsTableColumns, ActionsButton, IndicatorDot, STATUS_LABELS } from "./systems-table-columns"
 
 type ViewMode = "table" | "grid"
 type StatusFilter = "all" | SystemRecord["status"]
 
 const preloadSystemDetail = runOnce(() => import("@/components/routes/system.tsx"))
+
+/** Empty state shared by the table and grid layouts. */
+function NoResults({ filtered }: { filtered: boolean }) {
+	return (
+		<div className="grid justify-items-center gap-2 py-8 text-center" role="status">
+			<div className="grid size-10 place-items-center rounded-lg border bg-muted/50 text-muted-foreground">
+				<SearchXIcon className="size-5" aria-hidden="true" />
+			</div>
+			<p className="text-sm font-medium">
+				<Trans>No systems found.</Trans>
+			</p>
+			{filtered && (
+				<p className="text-xs text-muted-foreground">
+					<Trans>Try a different search or clear the filter.</Trans>
+				</p>
+			)}
+		</div>
+	)
+}
 
 // Keep the default fleet view focused on the metrics every host exposes.
 // GPU and load average are valuable opt-in fields but can be empty or noisy
@@ -160,14 +181,18 @@ export default function SystemsTable() {
 					</div>
 
 					<div className="flex gap-2 ms-auto w-full sm:w-auto">
-						<div className="relative flex-1 sm:flex-none">
-							<Input
-								aria-label={t`Filter systems`}
-								placeholder={t`Filter...`}
-								onChange={(e) => setFilter(e.target.value)}
-								value={filter}
-								className="ps-4 pe-10 w-full sm:w-52"
-							/>
+					<div className="relative flex-1 sm:flex-none">
+						<SearchIcon
+							className="pointer-events-none absolute start-3 top-1/2 size-4 -translate-y-1/2 text-muted-foreground"
+							aria-hidden="true"
+						/>
+						<Input
+							aria-label={t`Filter systems`}
+							placeholder={t`Filter...`}
+							onChange={(e) => setFilter(e.target.value)}
+							value={filter}
+							className="ps-9 pe-10 w-full sm:w-52"
+						/>
 							{filter && (
 								<Button
 									type="button"
@@ -339,7 +364,7 @@ export default function SystemsTable() {
 			{viewMode === "table" ? (
 				// table layout
 				<div className="rounded-md">
-					<AllSystemsTable table={table} rows={rows} colLength={visibleColumns.length} />
+					<AllSystemsTable table={table} rows={rows} colLength={visibleColumns.length} filtered={!!filter} />
 				</div>
 			) : (
 				// grid layout
@@ -349,8 +374,8 @@ export default function SystemsTable() {
 							return <SystemCard key={row.original.id} row={row} table={table} colLength={visibleColumns.length} />
 						})
 					) : (
-						<div className="col-span-full text-center py-8">
-							<Trans>No systems found.</Trans>
+						<div className="col-span-full">
+							<NoResults filtered={!!filter} />
 						</div>
 					)}
 				</div>
@@ -360,7 +385,17 @@ export default function SystemsTable() {
 }
 
 const AllSystemsTable = memo(
-	({ table, rows, colLength }: { table: TableType<SystemRecord>; rows: Row<SystemRecord>[]; colLength: number }) => {
+	({
+		table,
+		rows,
+		colLength,
+		filtered,
+	}: {
+		table: TableType<SystemRecord>
+		rows: Row<SystemRecord>[]
+		colLength: number
+		filtered: boolean
+	}) => {
 		// The virtualizer will need a reference to the scrollable container element
 		const scrollRef = useRef<HTMLDivElement>(null)
 
@@ -404,8 +439,8 @@ const AllSystemsTable = memo(
 								})
 							) : (
 								<TableRow>
-									<TableCell colSpan={colLength} className="h-37 text-center pointer-events-none">
-										<Trans>No systems found.</Trans>
+									<TableCell colSpan={colLength} className="pointer-events-none">
+										<NoResults filtered={filtered} />
 									</TableCell>
 								</TableRow>
 							)}
@@ -423,8 +458,9 @@ function SystemsTableHead({ table }: { table: TableType<SystemRecord> }) {
 			{table.getHeaderGroups().map((headerGroup) => (
 				<tr key={headerGroup.id}>
 					{headerGroup.headers.map((header) => {
+						const sorted = header.column.getIsSorted()
 						return (
-							<TableHead className="px-1.5" key={header.id}>
+							<TableHead className="px-1.5" key={header.id} aria-sort={sorted ? (sorted === "asc" ? "ascending" : "descending") : undefined}>
 								{flexRender(header.column.columnDef.header, header.getContext())}
 							</TableHead>
 						)
@@ -543,7 +579,9 @@ const SystemCard = memo(
 						href={getPagePath($router, "system", { id: row.original.id })}
 						className="inset-0 absolute w-full h-full"
 					>
-						<span className="sr-only">{row.original.name}</span>
+						<span className="sr-only">
+							{row.original.name} — {STATUS_LABELS[system.status as SystemStatus]?.() ?? system.status}
+						</span>
 					</Link>
 				</Card>
 			)

@@ -23,5 +23,14 @@ ProtectSystem=strict
 RemoveIPC=yes
 RestrictSUIDSGID=true
 
+# Grants the unprivileged beszel user just enough privilege to run smartctl
+# against NVMe and SATA/SCSI devices. NVMe SMART/health-log reads use an admin
+# passthrough ioctl that the kernel requires CAP_SYS_ADMIN for regardless of
+# /dev node permissions; some SATA/SCSI passthrough paths similarly require
+# CAP_SYS_RAWIO. Without these, smartctl exits with status 2 ("device open
+# failed") even though the beszel user can already read the device node via
+# the disk group.
+AmbientCapabilities=CAP_SYS_ADMIN CAP_SYS_RAWIO
+
 [Install]
 WantedBy=multi-user.target

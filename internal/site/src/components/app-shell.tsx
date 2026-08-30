@@ -46,6 +46,11 @@ const preloadSettings = runOnce(() => import("@/components/routes/settings/gener
 
 const SIDEBAR_COLLAPSED_KEY = "sidebar-collapsed"
 
+/** Show the macOS-style shortcut hint only where the ⌘ key exists. */
+const IS_APPLE_PLATFORM = /Mac|iPhone|iPad|iPod/i.test(
+	typeof navigator !== "undefined" ? `${navigator.platform} ${navigator.userAgent}` : ""
+)
+
 function readCollapsedPreference(): boolean {
 	try {
 		return localStorage.getItem(SIDEBAR_COLLAPSED_KEY) === "1"
@@ -228,7 +233,7 @@ function SearchButton({ collapsed, onOpen }: { collapsed?: boolean; onOpen: () =
 				<Trans>Search</Trans>
 			</span>
 			<kbd className="ms-auto hidden rounded border bg-muted px-1.5 font-mono text-[10px] font-medium text-muted-foreground xl:inline-flex">
-				⌘K
+				{IS_APPLE_PLATFORM ? "⌘K" : "Ctrl K"}
 			</kbd>
 		</button>
 	)
@@ -326,7 +331,12 @@ function Sidebar({
 					collapsed ? "flex-col justify-center gap-1 px-0" : "px-4"
 				)}
 			>
-				<Link href={basePath} aria-label={t`Home`} onMouseEnter={preloadHome} className="flex shrink-0 items-center">
+				<Link
+					href={basePath}
+					aria-label={t`Home`}
+					onMouseEnter={preloadHome}
+					className="group flex shrink-0 items-center"
+				>
 					{collapsed ? (
 						<LogoMark className="h-[1.15rem] fill-foreground" />
 					) : (
@@ -402,7 +412,7 @@ function MobileTopBar({ onSearch, onAddSystem }: { onSearch: () => void; onAddSy
 					<SheetContent side={direction === "rtl" ? "right" : "left"} className="w-72 gap-0 p-0">
 						<div className="flex h-14 items-center border-b px-5">
 							<SheetTitle asChild>
-								<Link href={basePath} onClick={() => setMenuOpen(false)} className="flex items-center">
+								<Link href={basePath} onClick={() => setMenuOpen(false)} className="group flex items-center">
 									<Logo className="h-[1.35rem] fill-foreground" />
 								</Link>
 							</SheetTitle>
@@ -428,7 +438,7 @@ function MobileTopBar({ onSearch, onAddSystem }: { onSearch: () => void; onAddSy
 						</div>
 					</SheetContent>
 				</Sheet>
-				<Link href={basePath} aria-label={t`Home`} className="ms-1 flex items-center">
+				<Link href={basePath} aria-label={t`Home`} className="group ms-1 flex items-center">
 					<Logo className="h-[1.25rem] fill-foreground" />
 				</Link>
 				<div className="ms-auto flex items-center gap-0.5">

@@ -443,6 +443,11 @@ msgstr "Kattintson egy eszközre további információk megtekintéséhez."
 msgid "Click to copy"
 msgstr "Kattints a másoláshoz"
 
+#: src/components/ui/dialog.tsx
+#: src/components/ui/sheet.tsx
+msgid "Close"
+msgstr ""
+
 #: src/components/app-shell.tsx
 #: src/components/app-shell.tsx
 msgid "Collapse sidebar"
@@ -699,6 +704,10 @@ msgctxt "Layout display options"
 msgid "Display"
 msgstr "Megjelenítés"
 
+#: src/components/routes/system/info-bar.tsx
+msgid "Display options"
+msgstr ""
+
 #: src/components/routes/system/charts/cpu-charts.tsx
 msgid "Docker CPU Usage"
 msgstr "Docker CPU használat"
@@ -724,6 +733,7 @@ msgstr ""
 #: src/components/alerts-history-columns.tsx
 #: src/components/fleet-overview.tsx
 #: src/components/routes/system/info-bar.tsx
+#: src/components/systems-table/systems-table-columns.tsx
 #: src/components/systems-table/systems-table-columns.tsx
 #: src/lib/alerts.ts
 msgid "Down"
@@ -1162,6 +1172,7 @@ msgid "Load state"
 msgstr "Betöltési állapot"
 
 #: src/components/login/login.tsx
+#: src/components/spinner.tsx
 #: src/main.tsx
 #: src/main.tsx
 msgid "Loading"
@@ -1325,7 +1336,6 @@ msgid "No sign-in methods are configured."
 msgstr ""
 
 #: src/components/systems-table/systems-table.tsx
-#: src/components/systems-table/systems-table.tsx
 msgid "No systems found."
 msgstr "Nem található rendszer."
 
@@ -1447,6 +1457,7 @@ msgstr ""
 
 #: src/components/fleet-overview.tsx
 #: src/components/systems-table/systems-table-columns.tsx
+#: src/components/systems-table/systems-table-columns.tsx
 msgid "Paused"
 msgstr "Szüneteltetve"
 
@@ -1463,6 +1474,7 @@ msgid "pending"
 msgstr ""
 
 #: src/components/fleet-overview.tsx
+#: src/components/systems-table/systems-table-columns.tsx
 msgid "Pending"
 msgstr ""
 
@@ -1785,7 +1797,6 @@ msgstr "Állítsa be a következő környezeti változókat a Beszel hubon a hea
 #: src/components/command-palette.tsx
 #: src/components/routes/settings/layout.tsx
 #: src/components/routes/settings/layout.tsx
-#: src/components/routes/system/info-bar.tsx
 msgid "Settings"
 msgstr "Beállítások"
 
@@ -2058,6 +2069,10 @@ msgstr "Riaszt, amikor a rendszer online állapota változik"
 msgid "Triggers when usage of any disk exceeds a threshold"
 msgstr "Riaszt, ha a lemezhasználat túllép egy küszöbértéket"
 
+#: src/components/systems-table/systems-table.tsx
+msgid "Try a different search or clear the filter."
+msgstr ""
+
 #: src/components/login/login.tsx
 msgid "Try again"
 msgstr ""
@@ -2114,6 +2129,7 @@ msgstr "Korlátlan"
 
 #. Context: System is up
 #: src/components/routes/system/info-bar.tsx
+#: src/components/systems-table/systems-table-columns.tsx
 #: src/components/systems-table/systems-table-columns.tsx
 msgid "Up"
 msgstr "Online"
@@ -2183,6 +2199,11 @@ msgstr "Érték"
 #: src/components/systems-table/systems-table.tsx
 msgid "View"
 msgstr "Nézet"
+
+#. placeholder {0}: system.name
+#: src/components/active-alerts.tsx
+msgid "View {0}"
+msgstr ""
 
 #: src/components/routes/system/cpu-sheet.tsx
 #: src/components/routes/system/disk-io-sheet.tsx

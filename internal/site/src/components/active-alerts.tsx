@@ -1,3 +1,4 @@
+import { t } from "@lingui/core/macro"
 import { alertInfo } from "@/lib/alerts"
 import { $alerts, $allSystemsById } from "@/lib/stores"
 import type { AlertRecord } from "@/types"
@@ -61,7 +62,7 @@ export const ActiveAlerts = () => {
 								<Link
 									href={getPagePath($router, "system", { id: system.id })}
 									className="absolute inset-0"
-									aria-label={`View ${system.name}`}
+									aria-label={t`View ${system.name}`}
 								/>
 							</Alert>
 						)

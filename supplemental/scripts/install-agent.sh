@@ -1142,6 +1142,13 @@ ProtectSystem=strict
 RemoveIPC=yes
 RestrictSUIDSGID=true
 
+# Lets the unprivileged beszel user run smartctl against NVMe/SATA/SCSI
+# devices. NVMe SMART/health-log reads require CAP_SYS_ADMIN for the admin
+# passthrough ioctl regardless of /dev node permissions, and some SATA/SCSI
+# passthrough paths require CAP_SYS_RAWIO. Without these, smartctl exits with
+# status 2 ("device open failed") even though beszel can read the device node.
+AmbientCapabilities=CAP_SYS_ADMIN CAP_SYS_RAWIO
+
 $(if [ -n "$NVIDIA_DEVICES" ]; then printf "%b" "# NVIDIA device permissions\n${NVIDIA_DEVICES}"; fi)
 
 [Install]
@@ -1157,6 +1164,15 @@ EOF
     [ "$KEY_PROVIDED" = "true" ] && sed -i "s|^Environment=\"KEY=.*\"|Environment=\"KEY=$SED_KEY\"|" /etc/systemd/system/beszel-agent.service
     [ "$TOKEN_PROVIDED" = "true" ] && sed -i "s|^Environment=\"TOKEN=.*\"|Environment=\"TOKEN=$SED_TOKEN\"|" /etc/systemd/system/beszel-agent.service
     [ "$HUB_URL_PROVIDED" = "true" ] && sed -i "s|^Environment=\"HUB_URL=.*\"|Environment=\"HUB_URL=$SED_HUB_URL\"|" /etc/systemd/system/beszel-agent.service
+
+    # Older installs predate the NVMe/SATA smartctl capability grant. Add it
+    # so upgrading an existing install fixes "smartctl ... exit status 2"
+    # (NVMe SMART reads need CAP_SYS_ADMIN; some SATA/SCSI passthrough needs
+    # CAP_SYS_RAWIO) without requiring the user to reinstall from scratch.
+    if ! grep -q "^AmbientCapabilities=" /etc/systemd/system/beszel-agent.service; then
+      echo "Granting smartctl device access capabilities to the agent service..."
+      sed -i "/^RestrictSUIDSGID=true/a AmbientCapabilities=CAP_SYS_ADMIN CAP_SYS_RAWIO" /etc/systemd/system/beszel-agent.service
+    fi
   fi
 
   # Load and start the service

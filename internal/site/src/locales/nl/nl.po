@@ -443,6 +443,11 @@ msgstr "Klik op een apparaat om meer informatie te bekijken."
 msgid "Click to copy"
 msgstr "Klik om te kopiëren"
 
+#: src/components/ui/dialog.tsx
+#: src/components/ui/sheet.tsx
+msgid "Close"
+msgstr ""
+
 #: src/components/app-shell.tsx
 #: src/components/app-shell.tsx
 msgid "Collapse sidebar"
@@ -699,6 +704,10 @@ msgctxt "Layout display options"
 msgid "Display"
 msgstr "Weergave"
 
+#: src/components/routes/system/info-bar.tsx
+msgid "Display options"
+msgstr ""
+
 #: src/components/routes/system/charts/cpu-charts.tsx
 msgid "Docker CPU Usage"
 msgstr "Docker CPU-gebruik"
@@ -724,6 +733,7 @@ msgstr ""
 #: src/components/alerts-history-columns.tsx
 #: src/components/fleet-overview.tsx
 #: src/components/routes/system/info-bar.tsx
+#: src/components/systems-table/systems-table-columns.tsx
 #: src/components/systems-table/systems-table-columns.tsx
 #: src/lib/alerts.ts
 msgid "Down"
@@ -1162,6 +1172,7 @@ msgid "Load state"
 msgstr "Laadstatus"
 
 #: src/components/login/login.tsx
+#: src/components/spinner.tsx
 #: src/main.tsx
 #: src/main.tsx
 msgid "Loading"
@@ -1325,7 +1336,6 @@ msgid "No sign-in methods are configured."
 msgstr ""
 
 #: src/components/systems-table/systems-table.tsx
-#: src/components/systems-table/systems-table.tsx
 msgid "No systems found."
 msgstr "Geen systemen gevonden."
 
@@ -1447,6 +1457,7 @@ msgstr ""
 
 #: src/components/fleet-overview.tsx
 #: src/components/systems-table/systems-table-columns.tsx
+#: src/components/systems-table/systems-table-columns.tsx
 msgid "Paused"
 msgstr "Gepauzeerd"
 
@@ -1463,6 +1474,7 @@ msgid "pending"
 msgstr ""
 
 #: src/components/fleet-overview.tsx
+#: src/components/systems-table/systems-table-columns.tsx
 msgid "Pending"
 msgstr ""
 
@@ -1785,7 +1797,6 @@ msgstr "Stel de volgende omgevingsvariabelen in op je Beszel-hub om heartbeat-mo
 #: src/components/command-palette.tsx
 #: src/components/routes/settings/layout.tsx
 #: src/components/routes/settings/layout.tsx
-#: src/components/routes/system/info-bar.tsx
 msgid "Settings"
 msgstr "Instellingen"
 
@@ -2058,6 +2069,10 @@ msgstr "Triggert wanneer de status schakelt tussen up en down"
 msgid "Triggers when usage of any disk exceeds a threshold"
 msgstr "Triggert wanneer het gebruik van een schijf een drempelwaarde overschrijdt"
 
+#: src/components/systems-table/systems-table.tsx
+msgid "Try a different search or clear the filter."
+msgstr ""
+
 #: src/components/login/login.tsx
 msgid "Try again"
 msgstr ""
@@ -2114,6 +2129,7 @@ msgstr "Onbeperkt"
 
 #. Context: System is up
 #: src/components/routes/system/info-bar.tsx
+#: src/components/systems-table/systems-table-columns.tsx
 #: src/components/systems-table/systems-table-columns.tsx
 msgid "Up"
 msgstr "Online"
@@ -2183,6 +2199,11 @@ msgstr "Waarde"
 #: src/components/systems-table/systems-table.tsx
 msgid "View"
 msgstr "Weergave"
+
+#. placeholder {0}: system.name
+#: src/components/active-alerts.tsx
+msgid "View {0}"
+msgstr ""
 
 #: src/components/routes/system/cpu-sheet.tsx
 #: src/components/routes/system/disk-io-sheet.tsx

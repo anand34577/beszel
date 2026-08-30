@@ -201,10 +201,10 @@ export default function InfoBar({
 					<DropdownMenu>
 						<DropdownMenuTrigger asChild>
 							<Button
-								aria-label={t`Settings`}
+								aria-label={t`Display options`}
 								variant="outline"
 								size="icon"
-								className="hidden xl:flex p-0 text-muted-foreground"
+								className="p-0 text-muted-foreground"
 							>
 								<Settings2Icon className="size-4" />
 							</Button>

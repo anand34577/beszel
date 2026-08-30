@@ -443,6 +443,11 @@ msgstr "Кликнете върху устройство, за да видите
 msgid "Click to copy"
 msgstr "Настисни за да копираш"
 
+#: src/components/ui/dialog.tsx
+#: src/components/ui/sheet.tsx
+msgid "Close"
+msgstr ""
+
 #: src/components/app-shell.tsx
 #: src/components/app-shell.tsx
 msgid "Collapse sidebar"
@@ -699,6 +704,10 @@ msgctxt "Layout display options"
 msgid "Display"
 msgstr "Показване"
 
+#: src/components/routes/system/info-bar.tsx
+msgid "Display options"
+msgstr ""
+
 #: src/components/routes/system/charts/cpu-charts.tsx
 msgid "Docker CPU Usage"
 msgstr "Използване на процесор от docker"
@@ -724,6 +733,7 @@ msgstr ""
 #: src/components/alerts-history-columns.tsx
 #: src/components/fleet-overview.tsx
 #: src/components/routes/system/info-bar.tsx
+#: src/components/systems-table/systems-table-columns.tsx
 #: src/components/systems-table/systems-table-columns.tsx
 #: src/lib/alerts.ts
 msgid "Down"
@@ -1162,6 +1172,7 @@ msgid "Load state"
 msgstr "Състояние на зареждане"
 
 #: src/components/login/login.tsx
+#: src/components/spinner.tsx
 #: src/main.tsx
 #: src/main.tsx
 msgid "Loading"
@@ -1325,7 +1336,6 @@ msgid "No sign-in methods are configured."
 msgstr ""
 
 #: src/components/systems-table/systems-table.tsx
-#: src/components/systems-table/systems-table.tsx
 msgid "No systems found."
 msgstr "Няма намерени системи."
 
@@ -1447,6 +1457,7 @@ msgstr ""
 
 #: src/components/fleet-overview.tsx
 #: src/components/systems-table/systems-table-columns.tsx
+#: src/components/systems-table/systems-table-columns.tsx
 msgid "Paused"
 msgstr "На пауза"
 
@@ -1463,6 +1474,7 @@ msgid "pending"
 msgstr ""
 
 #: src/components/fleet-overview.tsx
+#: src/components/systems-table/systems-table-columns.tsx
 msgid "Pending"
 msgstr ""
 
@@ -1785,7 +1797,6 @@ msgstr "Задайте следните променливи на средата
 #: src/components/command-palette.tsx
 #: src/components/routes/settings/layout.tsx
 #: src/components/routes/settings/layout.tsx
-#: src/components/routes/system/info-bar.tsx
 msgid "Settings"
 msgstr "Настройки"
 
@@ -2058,6 +2069,10 @@ msgstr "Задейства се, когато статуса превключв�
 msgid "Triggers when usage of any disk exceeds a threshold"
 msgstr "Задейства се, когато употребата на някой диск надивши зададен праг"
 
+#: src/components/systems-table/systems-table.tsx
+msgid "Try a different search or clear the filter."
+msgstr ""
+
 #: src/components/login/login.tsx
 msgid "Try again"
 msgstr ""
@@ -2114,6 +2129,7 @@ msgstr "Неограничено"
 
 #. Context: System is up
 #: src/components/routes/system/info-bar.tsx
+#: src/components/systems-table/systems-table-columns.tsx
 #: src/components/systems-table/systems-table-columns.tsx
 msgid "Up"
 msgstr "Нагоре"
@@ -2183,6 +2199,11 @@ msgstr "Стойност"
 #: src/components/systems-table/systems-table.tsx
 msgid "View"
 msgstr "Изглед"
+
+#. placeholder {0}: system.name
+#: src/components/active-alerts.tsx
+msgid "View {0}"
+msgstr ""
 
 #: src/components/routes/system/cpu-sheet.tsx
 #: src/components/routes/system/disk-io-sheet.tsx

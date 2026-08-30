@@ -50,6 +50,7 @@ import dev.beszel.mobile.data.FleetFilter
 import dev.beszel.mobile.data.FleetSort
 import dev.beszel.mobile.data.filterSystems
 import dev.beszel.mobile.ui.components.EmptyState
+import dev.beszel.mobile.ui.components.ErrorState
 import dev.beszel.mobile.ui.components.FleetPulseHeader
 import dev.beszel.mobile.ui.components.SystemCard
 import dev.beszel.mobile.ui.components.SystemCardSkeleton
@@ -73,7 +74,9 @@ fun FleetScreen(
     val alertsBySystem = remember(state.alerts) {
         state.activeAlerts.groupBy { it.systemId }.mapValues { (_, value) -> value.size }
     }
-    val visibleSystems = filterSystems(state.systems, state.alerts, query, filter, sort)
+    val visibleSystems = remember(state.systems, state.alerts, query, filter, sort) {
+        filterSystems(state.systems, state.alerts, query, filter, sort)
+    }
 
     PullToRefreshBox(
         isRefreshing = state.isRefreshing,
@@ -162,6 +165,11 @@ fun FleetScreen(
                 state.isLoadingFleet -> {
                     items(6) {
                         SystemCardSkeleton()
+                    }
+                }
+                state.systems.isEmpty() && state.fleetError != null -> {
+                    item(span = { GridItemSpan(maxLineSpan) }) {
+                        ErrorState(message = state.fleetError, onRetry = onRefresh)
                     }
                 }
                 state.systems.isEmpty() -> {

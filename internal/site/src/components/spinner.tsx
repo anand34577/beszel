@@ -1,13 +1,18 @@
+import { t } from "@lingui/core/macro"
 import { LoaderCircleIcon } from "lucide-react"
 import { cn } from "@/lib/utils"
 
 export default function ({ msg, className }: { msg?: string; className?: string }) {
 	return (
-		<div className={cn(className, "flex flex-col items-center justify-center h-full absolute inset-0")}>
+		<div
+			role="status"
+			className={cn(className, "flex flex-col items-center justify-center gap-2.5 h-full absolute inset-0")}
+		>
+			<LoaderCircleIcon className="animate-spin size-6 text-primary/70" aria-hidden="true" />
 			{msg ? (
-				<p className={"opacity-60 mb-2 text-center text-sm px-4"}>{msg}</p>
+				<p className="text-center text-sm px-4 text-muted-foreground">{msg}</p>
 			) : (
-				<LoaderCircleIcon className="animate-spin h-10 w-10 opacity-60" />
+				<span className="sr-only">{t`Loading`}</span>
 			)}
 		</div>
 	)
