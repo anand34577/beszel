@@ -42,13 +42,10 @@ import dev.beszel.mobile.data.AlertHistoryRecord
 import dev.beszel.mobile.data.AlertRecord
 import dev.beszel.mobile.data.alertPresentation
 import dev.beszel.mobile.data.formatNumber
+import dev.beszel.mobile.data.parseTimestamp
 import dev.beszel.mobile.ui.components.EmptyState
 import dev.beszel.mobile.ui.theme.BeszelTheme
 import dev.beszel.mobile.ui.theme.dataSmall
-import java.time.Instant
-import java.time.LocalDateTime
-import java.time.ZoneId
-import java.time.format.DateTimeFormatter
 
 @Composable
 fun AlertsScreen(state: AppUiState, contentPadding: PaddingValues) {
@@ -266,13 +263,8 @@ private fun HistoryTimelineRow(
 }
 
 private fun relativeTime(value: String): String = runCatching {
-    val instant = runCatching { Instant.parse(value) }.getOrElse {
-        val clean = value.substringBefore('.').replace('T', ' ')
-        LocalDateTime.parse(clean, DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss"))
-            .atZone(ZoneId.systemDefault()).toInstant()
-    }
     DateUtils.getRelativeTimeSpanString(
-        instant.toEpochMilli(),
+        parseTimestamp(value),
         System.currentTimeMillis(),
         DateUtils.MINUTE_IN_MILLIS,
     ).toString()

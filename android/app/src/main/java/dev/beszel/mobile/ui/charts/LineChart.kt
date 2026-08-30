@@ -83,7 +83,13 @@ fun LineChart(
 
     val reducedMotion = rememberReducedMotion()
     var drawTarget by remember { mutableFloatStateOf(0f) }
-    LaunchedEffect(timestamps, series) { drawTarget = 1f }
+    var scrubFraction by remember { mutableStateOf<Float?>(null) }
+    LaunchedEffect(timestamps, series) {
+        drawTarget = 1f
+        // New data (e.g. metric/range switch): drop any scrub crosshair from the
+        // previous series instead of leaving it pointing at the wrong values.
+        scrubFraction = null
+    }
     val drawProgress by animateFloatAsState(
         targetValue = drawTarget,
         animationSpec = tween(BeszelMotion.chartDrawMillis, easing = BeszelMotion.emphasizedDecelerate),
@@ -91,7 +97,6 @@ fun LineChart(
     )
     val progress = if (reducedMotion) 1f else drawProgress
 
-    var scrubFraction by remember { mutableStateOf<Float?>(null) }
     var canvasWidthPx by remember { mutableIntStateOf(0) }
     val textMeasurer = rememberTextMeasurer()
 
@@ -102,6 +107,23 @@ fun LineChart(
 
     val topMax = yMax ?: niceCeil(series.maxOf { it.values.max() } * 1.12f)
     val range = (topMax - yMin).takeIf { it > 1e-6f } ?: 1f
+
+    // Measure axis labels once per data/format change instead of every draw frame
+    // (the Canvas block re-runs on each tick of the draw-in animation).
+    val yLabels = remember(yMin, range, valueFormat, labelStyle) {
+        listOf(0f, 0.5f, 1f).map { fraction ->
+            fraction to textMeasurer.measure(text = valueFormat(yMin + range * fraction), style = labelStyle, softWrap = false)
+        }
+    }
+    val xLabels = if (pointCount >= 2) {
+        remember(timestamps, timeFormat, labelStyle) {
+            listOf(0, pointCount / 2, pointCount - 1).map { index ->
+                index to textMeasurer.measure(text = timeFormat(timestamps[index]), style = labelStyle, softWrap = false)
+            }
+        }
+    } else {
+        emptyList()
+    }
 
     Box(modifier.semantics { contentDescription = chartDescription }) {
         Canvas(
@@ -136,14 +158,9 @@ fun LineChart(
 
             // Horizontal gridlines at 0 / 50 / 100 percent of the range,
             // kept faint so data stays the loudest element.
-            listOf(0f, 0.5f, 1f).forEach { fraction ->
+            yLabels.forEach { (fraction, measured) ->
                 val y = plotBottom - plotHeight * fraction
                 drawLine(gridColor, Offset(plotLeft, y), Offset(plotRight, y), strokeWidth = 1.dp.toPx())
-                val measured = textMeasurer.measure(
-                    text = valueFormat(yMin + range * fraction),
-                    style = labelStyle,
-                    softWrap = false,
-                )
                 drawText(
                     measured,
                     topLeft = Offset(plotLeft - measured.size.width - 6.dp.toPx(), y - measured.size.height / 2f),
@@ -151,12 +168,7 @@ fun LineChart(
             }
 
             // X labels: start, middle, end.
-            listOf(0, pointCount / 2, pointCount - 1).forEach { index ->
-                val measured = textMeasurer.measure(
-                    text = timeFormat(timestamps[index]),
-                    style = labelStyle,
-                    softWrap = false,
-                )
+            xLabels.forEach { (index, measured) ->
                 val x = (xFor(index) - measured.size.width / 2f)
                     .coerceIn(plotLeft, (plotRight - measured.size.width).coerceAtLeast(plotLeft))
                 drawText(measured, topLeft = Offset(x, plotBottom + 4.dp.toPx()))

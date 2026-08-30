@@ -15,6 +15,7 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.rounded.ChevronRight
 import androidx.compose.material.icons.rounded.NotificationAdd
@@ -27,7 +28,9 @@ import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.Shape
 import androidx.compose.ui.graphics.vector.ImageVector
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.semantics.contentDescription
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.style.TextOverflow
@@ -39,6 +42,28 @@ import dev.beszel.mobile.ui.theme.BeszelTheme
 import dev.beszel.mobile.ui.theme.dataMedium
 import dev.beszel.mobile.ui.theme.dataSmall
 import dev.beszel.mobile.ui.theme.rememberReducedMotion
+
+/**
+ * The app's one card chrome: surfaceContainerLow fill, hairline outline, and
+ * (optionally) a click target. Every card-shaped surface in the app should be
+ * built on this instead of repeating the Surface(...) boilerplate.
+ */
+@Composable
+fun BeszelCard(
+    modifier: Modifier = Modifier,
+    shape: Shape = MaterialTheme.shapes.large,
+    onClick: (() -> Unit)? = null,
+    content: @Composable () -> Unit,
+) {
+    val cardModifier = modifier.fillMaxWidth()
+    val color = MaterialTheme.colorScheme.surfaceContainerLow
+    val border = BorderStroke(1.dp, MaterialTheme.colorScheme.outlineVariant)
+    if (onClick != null) {
+        Surface(modifier = cardModifier, onClick = onClick, shape = shape, color = color, border = border, content = content)
+    } else {
+        Surface(modifier = cardModifier, shape = shape, color = color, border = border, content = content)
+    }
+}
 
 /** Status -> semantic color. Meaning is fixed; dynamic color never touches it. */
 @Composable
@@ -52,11 +77,12 @@ fun statusColor(status: String): Color {
     }
 }
 
+@Composable
 fun statusLabel(status: String): String = when (status) {
-    "up" -> "Online"
-    "down" -> "Offline"
-    "paused" -> "Paused"
-    else -> "Pending"
+    "up" -> stringResource(dev.beszel.mobile.R.string.status_online)
+    "down" -> stringResource(dev.beszel.mobile.R.string.status_offline)
+    "paused" -> stringResource(dev.beszel.mobile.R.string.status_paused)
+    else -> stringResource(dev.beszel.mobile.R.string.status_pending)
 }
 
 /**
@@ -75,14 +101,9 @@ fun SystemCard(
     val color = statusColor(system.status)
     val accessibilityLabel = "${system.name}, ${statusLabel(system.status)}"
 
-    Surface(
-        modifier = modifier
-            .fillMaxWidth()
-            .semantics { contentDescription = accessibilityLabel },
+    BeszelCard(
+        modifier = modifier.semantics { contentDescription = accessibilityLabel },
         onClick = onClick,
-        shape = MaterialTheme.shapes.large,
-        color = MaterialTheme.colorScheme.surfaceContainerLow,
-        border = BorderStroke(1.dp, MaterialTheme.colorScheme.outlineVariant),
     ) {
         Column(Modifier.padding(18.dp), verticalArrangement = Arrangement.spacedBy(14.dp)) {
             Row(verticalAlignment = Alignment.CenterVertically) {
@@ -180,20 +201,34 @@ private fun MetricMeter(
             style = MaterialTheme.typography.dataMedium,
             color = MaterialTheme.colorScheme.onSurface,
         )
-        Box(Modifier.fillMaxWidth().height(4.dp)) {
-            Spacer(
-                Modifier
-                    .fillMaxWidth()
-                    .height(4.dp)
-                    .background(color.copy(alpha = 0.14f), CircleShape),
-            )
-            Spacer(
-                Modifier
-                    .fillMaxWidth(barFraction)
-                    .height(4.dp)
-                    .background(color, CircleShape),
-            )
-        }
+        ThinProgressBar(fraction = barFraction, color = color, height = 4.dp)
+    }
+}
+
+/** Rounded track + fill bar, shared by the fleet card meters and detail metric tiles. */
+@Composable
+fun ThinProgressBar(fraction: Float, color: Color, modifier: Modifier = Modifier, height: androidx.compose.ui.unit.Dp = 5.dp) {
+    Box(modifier.fillMaxWidth().height(height)) {
+        Spacer(Modifier.fillMaxWidth().height(height).background(color.copy(alpha = 0.14f), CircleShape))
+        Spacer(
+            Modifier
+                .fillMaxWidth(fraction.coerceIn(0f, 1f))
+                .height(height)
+                .background(color, CircleShape),
+        )
+    }
+}
+
+/** Icon in a tinted rounded chip, shared by the detail screen's metric tiles. */
+@Composable
+fun IconBadge(icon: ImageVector, color: Color, modifier: Modifier = Modifier) {
+    Surface(
+        modifier = modifier,
+        color = color.copy(alpha = 0.14f),
+        contentColor = color,
+        shape = RoundedCornerShape(10.dp),
+    ) {
+        Icon(icon, contentDescription = null, modifier = Modifier.padding(7.dp).size(18.dp))
     }
 }
 

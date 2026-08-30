@@ -438,6 +438,11 @@ msgstr "Click on a device to view more information."
 msgid "Click to copy"
 msgstr "Click to copy"
 
+#: src/components/ui/dialog.tsx
+#: src/components/ui/sheet.tsx
+msgid "Close"
+msgstr "Close"
+
 #: src/components/app-shell.tsx
 #: src/components/app-shell.tsx
 msgid "Collapse sidebar"
@@ -694,6 +699,10 @@ msgctxt "Layout display options"
 msgid "Display"
 msgstr "Display"
 
+#: src/components/routes/system/info-bar.tsx
+msgid "Display options"
+msgstr "Display options"
+
 #: src/components/routes/system/charts/cpu-charts.tsx
 msgid "Docker CPU Usage"
 msgstr "Docker CPU Usage"
@@ -719,6 +728,7 @@ msgstr "down"
 #: src/components/alerts-history-columns.tsx
 #: src/components/fleet-overview.tsx
 #: src/components/routes/system/info-bar.tsx
+#: src/components/systems-table/systems-table-columns.tsx
 #: src/components/systems-table/systems-table-columns.tsx
 #: src/lib/alerts.ts
 msgid "Down"
@@ -1157,6 +1167,7 @@ msgid "Load state"
 msgstr "Load state"
 
 #: src/components/login/login.tsx
+#: src/components/spinner.tsx
 #: src/main.tsx
 #: src/main.tsx
 msgid "Loading"
@@ -1320,7 +1331,6 @@ msgid "No sign-in methods are configured."
 msgstr "No sign-in methods are configured."
 
 #: src/components/systems-table/systems-table.tsx
-#: src/components/systems-table/systems-table.tsx
 msgid "No systems found."
 msgstr "No systems found."
 
@@ -1442,6 +1452,7 @@ msgstr "paused"
 
 #: src/components/fleet-overview.tsx
 #: src/components/systems-table/systems-table-columns.tsx
+#: src/components/systems-table/systems-table-columns.tsx
 msgid "Paused"
 msgstr "Paused"
 
@@ -1458,6 +1469,7 @@ msgid "pending"
 msgstr "pending"
 
 #: src/components/fleet-overview.tsx
+#: src/components/systems-table/systems-table-columns.tsx
 msgid "Pending"
 msgstr "Pending"
 
@@ -1780,7 +1792,6 @@ msgstr "Set the following environment variables on your Beszel hub to enable hea
 #: src/components/command-palette.tsx
 #: src/components/routes/settings/layout.tsx
 #: src/components/routes/settings/layout.tsx
-#: src/components/routes/system/info-bar.tsx
 msgid "Settings"
 msgstr "Settings"
 
@@ -2053,6 +2064,10 @@ msgstr "Triggers when status switches between up and down"
 msgid "Triggers when usage of any disk exceeds a threshold"
 msgstr "Triggers when usage of any disk exceeds a threshold"
 
+#: src/components/systems-table/systems-table.tsx
+msgid "Try a different search or clear the filter."
+msgstr "Try a different search or clear the filter."
+
 #: src/components/login/login.tsx
 msgid "Try again"
 msgstr "Try again"
@@ -2109,6 +2124,7 @@ msgstr "Unlimited"
 
 #. Context: System is up
 #: src/components/routes/system/info-bar.tsx
+#: src/components/systems-table/systems-table-columns.tsx
 #: src/components/systems-table/systems-table-columns.tsx
 msgid "Up"
 msgstr "Up"
@@ -2178,6 +2194,11 @@ msgstr "Value"
 #: src/components/systems-table/systems-table.tsx
 msgid "View"
 msgstr "View"
+
+#. placeholder {0}: system.name
+#: src/components/active-alerts.tsx
+msgid "View {0}"
+msgstr "View {0}"
 
 #: src/components/routes/system/cpu-sheet.tsx
 #: src/components/routes/system/disk-io-sheet.tsx

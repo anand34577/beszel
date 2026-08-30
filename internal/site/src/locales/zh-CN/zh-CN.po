@@ -443,6 +443,11 @@ msgstr "点击设备查看更多信息。"
 msgid "Click to copy"
 msgstr "点击复制"
 
+#: src/components/ui/dialog.tsx
+#: src/components/ui/sheet.tsx
+msgid "Close"
+msgstr ""
+
 #: src/components/app-shell.tsx
 #: src/components/app-shell.tsx
 msgid "Collapse sidebar"
@@ -699,6 +704,10 @@ msgctxt "Layout display options"
 msgid "Display"
 msgstr "显示"
 
+#: src/components/routes/system/info-bar.tsx
+msgid "Display options"
+msgstr ""
+
 #: src/components/routes/system/charts/cpu-charts.tsx
 msgid "Docker CPU Usage"
 msgstr "Docker CPU 使用"
@@ -724,6 +733,7 @@ msgstr ""
 #: src/components/alerts-history-columns.tsx
 #: src/components/fleet-overview.tsx
 #: src/components/routes/system/info-bar.tsx
+#: src/components/systems-table/systems-table-columns.tsx
 #: src/components/systems-table/systems-table-columns.tsx
 #: src/lib/alerts.ts
 msgid "Down"
@@ -1162,6 +1172,7 @@ msgid "Load state"
 msgstr "加载状态"
 
 #: src/components/login/login.tsx
+#: src/components/spinner.tsx
 #: src/main.tsx
 #: src/main.tsx
 msgid "Loading"
@@ -1325,7 +1336,6 @@ msgid "No sign-in methods are configured."
 msgstr ""
 
 #: src/components/systems-table/systems-table.tsx
-#: src/components/systems-table/systems-table.tsx
 msgid "No systems found."
 msgstr "未找到系统。"
 
@@ -1447,6 +1457,7 @@ msgstr ""
 
 #: src/components/fleet-overview.tsx
 #: src/components/systems-table/systems-table-columns.tsx
+#: src/components/systems-table/systems-table-columns.tsx
 msgid "Paused"
 msgstr "已暂停"
 
@@ -1463,6 +1474,7 @@ msgid "pending"
 msgstr ""
 
 #: src/components/fleet-overview.tsx
+#: src/components/systems-table/systems-table-columns.tsx
 msgid "Pending"
 msgstr ""
 
@@ -1785,7 +1797,6 @@ msgstr "在您的 Beszel hub 上设置以下环境变量以启用 heartbeat 监�
 #: src/components/command-palette.tsx
 #: src/components/routes/settings/layout.tsx
 #: src/components/routes/settings/layout.tsx
-#: src/components/routes/system/info-bar.tsx
 msgid "Settings"
 msgstr "设置"
 
@@ -2058,6 +2069,10 @@ msgstr "当状态在上线与掉线之间切换时触发"
 msgid "Triggers when usage of any disk exceeds a threshold"
 msgstr "当任何磁盘的使用率超过阈值时触发"
 
+#: src/components/systems-table/systems-table.tsx
+msgid "Try a different search or clear the filter."
+msgstr ""
+
 #: src/components/login/login.tsx
 msgid "Try again"
 msgstr ""
@@ -2114,6 +2129,7 @@ msgstr "无限制"
 
 #. Context: System is up
 #: src/components/routes/system/info-bar.tsx
+#: src/components/systems-table/systems-table-columns.tsx
 #: src/components/systems-table/systems-table-columns.tsx
 msgid "Up"
 msgstr "在线"
@@ -2183,6 +2199,11 @@ msgstr "值"
 #: src/components/systems-table/systems-table.tsx
 msgid "View"
 msgstr "视图"
+
+#. placeholder {0}: system.name
+#: src/components/active-alerts.tsx
+msgid "View {0}"
+msgstr ""
 
 #: src/components/routes/system/cpu-sheet.tsx
 #: src/components/routes/system/disk-io-sheet.tsx

@@ -38,11 +38,13 @@ import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.vector.ImageVector
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavGraph.Companion.findStartDestination
 import androidx.navigation.NavHostController
+import dev.beszel.mobile.R
 import androidx.navigation.NavType
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
@@ -60,10 +62,10 @@ import dev.beszel.mobile.ui.screens.SettingsScreen
 import dev.beszel.mobile.ui.screens.SystemDetailScreen
 import dev.beszel.mobile.ui.theme.BeszelMotion
 
-enum class TopLevelDestination(val route: String, val label: String, val icon: ImageVector) {
-    FLEET("fleet", "Fleet", Icons.Rounded.Dashboard),
-    ALERTS("alerts", "Alerts", Icons.Rounded.Notifications),
-    SETTINGS("settings", "Settings", Icons.Rounded.Settings),
+enum class TopLevelDestination(val route: String, val labelRes: Int, val icon: ImageVector) {
+    FLEET("fleet", R.string.nav_fleet, Icons.Rounded.Dashboard),
+    ALERTS("alerts", R.string.nav_alerts, Icons.Rounded.Notifications),
+    SETTINGS("settings", R.string.nav_settings, Icons.Rounded.Settings),
 }
 
 const val SYSTEM_DETAIL_ROUTE = "system/{systemId}"
@@ -169,7 +171,11 @@ private fun MainContent(state: AppUiState, viewModel: AppViewModel) {
                         val systemId = entry.arguments?.getString("systemId").orEmpty()
                         val system = state.systems.firstOrNull { it.id == systemId }
                         val detailViewModel: SystemDetailViewModel = viewModel(
-                            factory = SystemDetailViewModel.Factory(viewModel.repository, systemId),
+                            factory = SystemDetailViewModel.Factory(
+                                viewModel.repository,
+                                systemId,
+                                onSessionExpired = viewModel::logout,
+                            ),
                         )
                         val detailUiState by detailViewModel.state.collectAsStateWithLifecycle()
                         SystemDetailScreen(
@@ -207,7 +213,7 @@ private fun AppNavigationBar(
                 selected = selectedRoute == destination.route,
                 onClick = { onSelect(destination) },
                 icon = { DestinationIcon(destination, alertCount) },
-                label = { Text(destination.label) },
+                label = { Text(stringResource(destination.labelRes)) },
             )
         }
     }
@@ -230,7 +236,7 @@ private fun AppNavigationRail(
                 selected = selectedRoute == destination.route,
                 onClick = { onSelect(destination) },
                 icon = { DestinationIcon(destination, alertCount) },
-                label = { Text(destination.label) },
+                label = { Text(stringResource(destination.labelRes)) },
             )
         }
     }
@@ -240,9 +246,9 @@ private fun AppNavigationRail(
 private fun DestinationIcon(destination: TopLevelDestination, alertCount: Int) {
     if (destination == TopLevelDestination.ALERTS && alertCount > 0) {
         BadgedBox(badge = { Badge { Text(alertCount.coerceAtMost(99).toString()) } }) {
-            Icon(destination.icon, contentDescription = destination.label)
+            Icon(destination.icon, contentDescription = stringResource(destination.labelRes))
         }
     } else {
-        Icon(destination.icon, contentDescription = destination.label)
+        Icon(destination.icon, contentDescription = stringResource(destination.labelRes))
     }
 }

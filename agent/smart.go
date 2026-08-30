@@ -566,7 +566,11 @@ func (sm *SmartManager) CollectSmart(deviceInfo *DeviceInfo) error {
 
 	if !hasValidData {
 		if err != nil {
-			slog.Info("smartctl failed", "device", deviceInfo.Name, "err", err)
+			logArgs := []any{"device", deviceInfo.Name, "err", err}
+			if reason := smartctlFailureReason(output); reason != "" {
+				logArgs = append(logArgs, "reason", reason)
+			}
+			slog.Info("smartctl failed", logArgs...)
 			return err
 		}
 		slog.Info("no valid SMART data found", "device", deviceInfo.Name)
@@ -970,6 +974,45 @@ func (sm *SmartManager) parseSmartForSata(output []byte, deviceType string) (boo
 	sm.SmartDataMap[keyName] = smartData
 
 	return true, data.Smartctl.ExitStatus
+}
+
+// smartctlFailureReason extracts a human-readable reason for a failed
+// smartctl run, e.g. "Smartctl open device: /dev/nvme0n1 failed: Permission
+// denied". Reads via --json=c still emit a JSON envelope on failure, with the
+// underlying error in smartctl.messages[], so that is checked before falling
+// back to the last non-empty line for plain-text failures (e.g. the binary
+// itself failed to exec). A detected permission error gets an actionable
+// hint appended, since it is the most common cause of NVMe SMART failures
+// when the agent runs as an unprivileged user.
+func smartctlFailureReason(output []byte) string {
+	var probe struct {
+		Smartctl struct {
+			Messages []struct {
+				String string `json:"string"`
+			} `json:"messages"`
+		} `json:"smartctl"`
+	}
+	reason := ""
+	if err := json.Unmarshal(output, &probe); err == nil && len(probe.Smartctl.Messages) > 0 {
+		reason = probe.Smartctl.Messages[0].String
+	}
+
+	if reason == "" {
+		text := strings.TrimSpace(string(output))
+		if text == "" {
+			return ""
+		}
+		lines := strings.Split(text, "\n")
+		reason = strings.TrimSpace(lines[len(lines)-1])
+	}
+
+	if reason == "" {
+		return ""
+	}
+	if strings.Contains(reason, "Permission denied") || strings.Contains(reason, "Operation not permitted") {
+		reason += " (agent needs CAP_SYS_ADMIN/CAP_SYS_RAWIO, or to run as root, to read NVMe/SATA SMART data)"
+	}
+	return reason
 }
 
 func getSmartStatus(temperature uint8, passed bool) string {

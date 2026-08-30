@@ -22,7 +22,14 @@ export const isReadOnlyUser = () => pb.authStore.record?.role === "readonly"
 export const verifyAuth = () => {
 	pb.collection("users")
 		.authRefresh()
-		.catch(() => {
+		.catch((error: unknown) => {
+			// Only the server actively rejecting the token (401/403) means the
+			// session is really invalid. A network blip, timeout, or aborted
+			// request (status 0, common on flaky mobile connections) is not
+			// proof of that - logging out on those drops a perfectly good
+			// session and forces a re-login for no reason.
+			const status = typeof error === "object" && error !== null && "status" in error ? Number((error as { status?: unknown }).status) : 0
+			if (status !== 401 && status !== 403) return
 			logOut()
 			toast({
 				title: t`Failed to authenticate`,

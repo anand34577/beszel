@@ -6,6 +6,8 @@ import { getPagePath } from "@nanostores/router"
 import type { CellContext, ColumnDef, HeaderContext } from "@tanstack/react-table"
 import type { ClassValue } from "clsx"
 import {
+	ArrowDownIcon,
+	ArrowUpIcon,
 	ArrowUpDownIcon,
 	ChevronRightSquareIcon,
 	ClockArrowUp,
@@ -80,6 +82,14 @@ const STATUS_COLORS = {
 	[SystemStatus.Pending]: "bg-warning",
 } as const
 
+/** Translated status labels so the status is never conveyed by color alone. */
+export const STATUS_LABELS: Record<SystemStatus, () => string> = {
+	[SystemStatus.Up]: () => t`Up`,
+	[SystemStatus.Down]: () => t`Down`,
+	[SystemStatus.Paused]: () => t`Paused`,
+	[SystemStatus.Pending]: () => t`Pending`,
+}
+
 function getMeterStateByThresholds(value: number, warn = 65, crit = 90): MeterState {
 	return value >= crit ? MeterState.Crit : value >= warn ? MeterState.Warn : MeterState.Good
 }
@@ -137,9 +147,10 @@ export function SystemsTableColumns(viewMode: "table" | "grid"): ColumnDef<Syste
 			invertSorting: false,
 			Icon: ServerIcon,
 			cell: (info) => {
-				const { name, id } = info.row.original
+				const { name, id, status } = info.row.original
 				const longestName = useStore($longestSystemNameLen)
 				const linkUrl = getPagePath($router, "system", { id })
+				const statusLabel = STATUS_LABELS[status as SystemStatus]?.() ?? status
 
 				return (
 					<>
@@ -163,7 +174,11 @@ export function SystemsTableColumns(viewMode: "table" | "grid"): ColumnDef<Syste
 								{name}
 							</Link>
 						</span>
-						<Link href={linkUrl} className="inset-0 absolute size-full" aria-label={name}></Link>
+						<Link
+							href={linkUrl}
+							className="inset-0 absolute size-full"
+							aria-label={`${name} — ${statusLabel}`}
+						></Link>
 					</>
 				)
 			},
@@ -448,6 +463,7 @@ function sortableHeader(context: HeaderContext<SystemRecord, unknown>) {
 	// @ts-expect-error
 	const { Icon, hideSort, name }: { Icon: React.ElementType; name: () => string; hideSort: boolean } = column.columnDef
 	const isSorted = column.getIsSorted()
+	const SortIcon = isSorted === "asc" ? ArrowUpIcon : isSorted === "desc" ? ArrowDownIcon : ArrowUpDownIcon
 	return (
 		<Button
 			variant="ghost"
@@ -456,7 +472,12 @@ function sortableHeader(context: HeaderContext<SystemRecord, unknown>) {
 		>
 			{Icon && <Icon className="me-2 size-4" />}
 			{name()}
-			{hideSort || <ArrowUpDownIcon className="ms-2 size-4" />}
+			{hideSort || (
+				<SortIcon
+					className={cn("ms-2 size-4", !isSorted && "opacity-40")}
+					aria-hidden="true"
+				/>
+			)}
 		</Button>
 	)
 }

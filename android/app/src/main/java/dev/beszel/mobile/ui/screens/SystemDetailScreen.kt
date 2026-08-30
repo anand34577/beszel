@@ -1,6 +1,5 @@
 package dev.beszel.mobile.ui.screens
 
-import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
 import androidx.compose.foundation.horizontalScroll
 import androidx.compose.foundation.layout.Arrangement
@@ -18,7 +17,6 @@ import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
-import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.rounded.ArrowBack
 import androidx.compose.material.icons.rounded.BatteryFull
@@ -60,8 +58,11 @@ import dev.beszel.mobile.data.formatUptime
 import dev.beszel.mobile.ui.charts.ChartSeries
 import dev.beszel.mobile.ui.charts.LineChart
 import dev.beszel.mobile.ui.components.AnimatedNumber
+import dev.beszel.mobile.ui.components.BeszelCard
 import dev.beszel.mobile.ui.components.ErrorState
+import dev.beszel.mobile.ui.components.IconBadge
 import dev.beszel.mobile.ui.components.SegmentedControl
+import dev.beszel.mobile.ui.components.ThinProgressBar
 import dev.beszel.mobile.ui.components.ShimmerLine
 import dev.beszel.mobile.ui.components.SplashState
 import dev.beszel.mobile.ui.components.StatusDot
@@ -76,6 +77,10 @@ import java.text.SimpleDateFormat
 import java.util.Date
 import java.util.Locale
 import kotlin.math.roundToInt
+
+// Stateless: hoisted so LineChart always receives the same lambda instance.
+private val percentValueFormat: (Float) -> String = { "${it.roundToInt()}%" }
+private val bytesValueFormat: (Float) -> String = { formatBytesPerSecond(it.toDouble()) }
 
 enum class DetailMetric(val label: String) {
     CPU("CPU"), MEMORY("Memory"), DISK("Disk"), NETWORK("Network"),
@@ -92,7 +97,22 @@ fun SystemDetailScreen(
     onRefresh: () -> Unit,
 ) {
     if (system == null) {
-        SplashState()
+        // No system yet (cold-start race) or it's gone from the hub: still give the
+        // user a way out instead of a dead-end splash with no back button.
+        Scaffold(
+            topBar = {
+                TopAppBar(
+                    navigationIcon = {
+                        IconButton(onClick = onBack) {
+                            Icon(Icons.AutoMirrored.Rounded.ArrowBack, contentDescription = stringResource(R.string.action_back))
+                        }
+                    },
+                    title = {},
+                )
+            },
+        ) { padding ->
+            SplashState(modifier = Modifier.padding(padding))
+        }
         return
     }
     val metrics = BeszelTheme.metrics
@@ -206,12 +226,7 @@ fun SystemDetailScreen(
 private fun SystemHeader(system: SystemRecord) {
     val metrics = BeszelTheme.metrics
     val statusColor = statusColor(system.status)
-    Surface(
-        modifier = Modifier.fillMaxWidth(),
-        shape = MaterialTheme.shapes.extraLarge,
-        color = MaterialTheme.colorScheme.surfaceContainerLow,
-        border = BorderStroke(1.dp, MaterialTheme.colorScheme.outlineVariant),
-    ) {
+    BeszelCard(shape = MaterialTheme.shapes.extraLarge) {
         Column(Modifier.padding(20.dp)) {
             Row(verticalAlignment = Alignment.CenterVertically) {
                 StatusDot(color = statusColor, pulse = system.isUp)
@@ -286,21 +301,10 @@ private fun MetricTile(
     supporting: String,
     modifier: Modifier = Modifier,
 ) {
-    Surface(
-        modifier = modifier,
-        shape = MaterialTheme.shapes.large,
-        color = MaterialTheme.colorScheme.surfaceContainerLow,
-        border = BorderStroke(1.dp, MaterialTheme.colorScheme.outlineVariant),
-    ) {
+    BeszelCard(modifier = modifier) {
         Column(Modifier.padding(16.dp)) {
             Row(verticalAlignment = Alignment.CenterVertically) {
-                Surface(
-                    color = color.copy(alpha = 0.14f),
-                    contentColor = color,
-                    shape = RoundedCornerShape(10.dp),
-                ) {
-                    Icon(icon, contentDescription = null, modifier = Modifier.padding(7.dp).size(18.dp))
-                }
+                IconBadge(icon, color)
                 Spacer(Modifier.width(8.dp))
                 Text(label, style = MaterialTheme.typography.labelLarge, color = MaterialTheme.colorScheme.onSurfaceVariant)
             }
@@ -311,16 +315,7 @@ private fun MetricTile(
                 style = MaterialTheme.typography.metricValueLarge,
             )
             Spacer(Modifier.height(12.dp))
-            Box(Modifier.fillMaxWidth().height(5.dp)) {
-                Spacer(Modifier.fillMaxWidth().height(5.dp).background(color.copy(alpha = 0.14f), CircleShape))
-                val fraction = (valuePercent.coerceIn(0f, 100f) / 100f).coerceIn(0f, 1f)
-                Spacer(
-                    Modifier
-                        .fillMaxWidth(fraction)
-                        .height(5.dp)
-                        .background(color, CircleShape),
-                )
-            }
+            ThinProgressBar(fraction = valuePercent.coerceIn(0f, 100f) / 100f, color = color)
             if (supporting.isNotBlank()) {
                 Spacer(Modifier.height(10.dp))
                 Text(
@@ -343,21 +338,10 @@ private fun NetworkTile(
     modifier: Modifier = Modifier,
 ) {
     val total = (downBytesPerSecond ?: 0.0) + (upBytesPerSecond ?: 0.0)
-    Surface(
-        modifier = modifier,
-        shape = MaterialTheme.shapes.large,
-        color = MaterialTheme.colorScheme.surfaceContainerLow,
-        border = BorderStroke(1.dp, MaterialTheme.colorScheme.outlineVariant),
-    ) {
+    BeszelCard(modifier = modifier) {
         Column(Modifier.padding(16.dp)) {
             Row(verticalAlignment = Alignment.CenterVertically) {
-                Surface(
-                    color = color.copy(alpha = 0.14f),
-                    contentColor = color,
-                    shape = RoundedCornerShape(10.dp),
-                ) {
-                    Icon(Icons.Rounded.NetworkCheck, contentDescription = null, modifier = Modifier.padding(7.dp).size(18.dp))
-                }
+                IconBadge(Icons.Rounded.NetworkCheck, color)
                 Spacer(Modifier.width(8.dp))
                 Text(
                     stringResource(R.string.metric_network),
@@ -404,12 +388,7 @@ private fun HistoryCard(
     val stats = detailState.stats
     val range = detailState.range
 
-    Surface(
-        modifier = Modifier.fillMaxWidth(),
-        shape = MaterialTheme.shapes.extraLarge,
-        color = MaterialTheme.colorScheme.surfaceContainerLow,
-        border = BorderStroke(1.dp, MaterialTheme.colorScheme.outlineVariant),
-    ) {
+    BeszelCard(shape = MaterialTheme.shapes.extraLarge) {
         Column(Modifier.padding(18.dp), verticalArrangement = Arrangement.spacedBy(14.dp)) {
             Text(stringResource(R.string.detail_history_title), style = MaterialTheme.typography.titleMedium)
             SegmentedControl(
@@ -448,17 +427,18 @@ private fun HistoryCard(
                                 ChartSeries(stats.map { it.networkUpBytes.toFloat() }, metrics.networkAlt, stringResource(R.string.network_out)),
                             )
                         }
-                        val percentFormat: (Float) -> String = { "${it.roundToInt()}%" }
-                        val bytesFormat: (Float) -> String = { formatBytesPerSecond(it.toDouble()) }
                         val showWeek = range.hours >= 48
                         val timeFormat = remember(range) {
                             SimpleDateFormat(if (showWeek) "EEE HH:mm" else "HH:mm", Locale.getDefault())
                         }
+                        // Stable lambda identities so Compose can skip recomposing LineChart
+                        // when nothing it actually reads (metric, stats, range) has changed.
+                        val timeFormatter = remember(timeFormat) { { millis: Long -> timeFormat.format(Date(millis)) } }
                         LineChart(
                             timestamps = timestamps,
                             series = series,
-                            valueFormat = if (metric == DetailMetric.NETWORK) bytesFormat else percentFormat,
-                            timeFormat = { timeFormat.format(Date(it)) },
+                            valueFormat = if (metric == DetailMetric.NETWORK) bytesValueFormat else percentValueFormat,
+                            timeFormat = timeFormatter,
                             yMax = if (metric == DetailMetric.NETWORK) null else 100f,
                             chartDescription = stringResource(
                                 R.string.detail_chart_description,
@@ -509,12 +489,7 @@ private fun EmptyChart() {
 
 @Composable
 private fun HostInformation(system: SystemRecord) {
-    Surface(
-        modifier = Modifier.fillMaxWidth(),
-        shape = MaterialTheme.shapes.extraLarge,
-        color = MaterialTheme.colorScheme.surfaceContainerLow,
-        border = BorderStroke(1.dp, MaterialTheme.colorScheme.outlineVariant),
-    ) {
+    BeszelCard(shape = MaterialTheme.shapes.extraLarge) {
         Column(Modifier.padding(18.dp), verticalArrangement = Arrangement.spacedBy(12.dp)) {
             Text(stringResource(R.string.detail_host_info), style = MaterialTheme.typography.titleMedium)
             DetailRow(stringResource(R.string.detail_host), system.host + system.port.takeIf { it.isNotBlank() }?.let { ":$it" }.orEmpty())

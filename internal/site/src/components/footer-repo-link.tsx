@@ -12,7 +12,7 @@ export function FooterRepoLink() {
 				href="https://github.com/henrygd/beszel"
 				target="_blank"
 				className="flex items-center gap-0.5 text-muted-foreground hover:text-foreground duration-75"
-				rel="noopener"
+				rel="noopener noreferrer"
 			>
 				<GithubIcon className="h-3 w-3" /> GitHub
 			</a>
@@ -21,7 +21,7 @@ export function FooterRepoLink() {
 				href="https://github.com/henrygd/beszel/releases"
 				target="_blank"
 				className="text-muted-foreground hover:text-foreground duration-75"
-				rel="noopener"
+				rel="noopener noreferrer"
 			>
 				Beszel {globalThis.BESZEL.HUB_VERSION}
 			</a>
@@ -32,7 +32,7 @@ export function FooterRepoLink() {
 						href={newVersion.url}
 						target="_blank"
 						className="text-warning hover:text-warning/80 duration-75"
-						rel="noopener"
+						rel="noopener noreferrer"
 					>
 						<Trans context="New version available">{newVersion.v} available</Trans>
 					</a>

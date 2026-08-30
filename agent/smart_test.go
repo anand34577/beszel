@@ -1489,3 +1489,47 @@ func TestLookupDarwinNvmeCapacityProviderError(t *testing.T) {
 	// Cache should be initialized even on error so we don't retry (Once already fired)
 	assert.NotNil(t, sm.darwinNvmeCapacity)
 }
+
+func TestSmartctlFailureReason(t *testing.T) {
+	tests := []struct {
+		name   string
+		output string
+		want   string
+	}{
+		{
+			name:   "empty output",
+			output: "",
+			want:   "",
+		},
+		{
+			name: "json envelope with permission denied message",
+			output: `{"smartctl":{"version":[7,3],"exit_status":2,"messages":[
+				{"string":"Smartctl open device: /dev/nvme0n1 failed: Permission denied","severity":"error"}
+			]}}`,
+			want: "Smartctl open device: /dev/nvme0n1 failed: Permission denied (agent needs CAP_SYS_ADMIN/CAP_SYS_RAWIO, or to run as root, to read NVMe/SATA SMART data)",
+		},
+		{
+			name: "json envelope with operation not permitted message",
+			output: `{"smartctl":{"exit_status":2,"messages":[
+				{"string":"NVME_IOCTL_ADMIN_CMD: Operation not permitted","severity":"error"}
+			]}}`,
+			want: "NVME_IOCTL_ADMIN_CMD: Operation not permitted (agent needs CAP_SYS_ADMIN/CAP_SYS_RAWIO, or to run as root, to read NVMe/SATA SMART data)",
+		},
+		{
+			name:   "plain text failure, no json",
+			output: "smartctl 7.3 2022-02-28 r5338\n\nSmartctl open device: /dev/nvme0n1 failed: No such device\n",
+			want:   "Smartctl open device: /dev/nvme0n1 failed: No such device",
+		},
+		{
+			name:   "json without messages falls back to last line",
+			output: "{\"smartctl\":{\"exit_status\":2}}",
+			want:   `{"smartctl":{"exit_status":2}}`,
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			assert.Equal(t, tt.want, smartctlFailureReason([]byte(tt.output)))
+		})
+	}
+}

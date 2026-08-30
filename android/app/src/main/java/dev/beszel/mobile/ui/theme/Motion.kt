@@ -2,12 +2,17 @@ package dev.beszel.mobile.ui.theme
 
 import android.provider.Settings
 import androidx.compose.animation.core.CubicBezierEasing
+import androidx.compose.animation.core.RepeatMode
 import androidx.compose.animation.core.Spring
 import androidx.compose.animation.core.SpringSpec
 import androidx.compose.animation.core.TweenSpec
+import androidx.compose.animation.core.animateFloat
+import androidx.compose.animation.core.infiniteRepeatable
+import androidx.compose.animation.core.rememberInfiniteTransition
 import androidx.compose.animation.core.spring
 import androidx.compose.animation.core.tween
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
 import androidx.compose.ui.platform.LocalContext
 
@@ -34,6 +39,29 @@ object BeszelMotion {
     fun <T> fadeSlow(): TweenSpec<T> = tween(durationMillis = 300, easing = emphasizedDecelerate)
     const val chartDrawMillis = 450
     const val listStaggerMillis = 35
+}
+
+/**
+ * Shared infinite reverse-pulse (used by the splash mark scale and status-dot
+ * halo). Freezes at [restValue] (defaults to [initialValue]) under reduced motion.
+ */
+@Composable
+fun rememberPulse(
+    initialValue: Float,
+    targetValue: Float,
+    durationMillis: Int,
+    label: String,
+    restValue: Float = initialValue,
+): Float {
+    if (rememberReducedMotion()) return restValue
+    val transition = rememberInfiniteTransition(label = label)
+    val value by transition.animateFloat(
+        initialValue = initialValue,
+        targetValue = targetValue,
+        animationSpec = infiniteRepeatable(tween(durationMillis), RepeatMode.Reverse),
+        label = "$label-value",
+    )
+    return value
 }
 
 /**

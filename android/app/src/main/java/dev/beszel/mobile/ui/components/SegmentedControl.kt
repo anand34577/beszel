@@ -21,7 +21,6 @@ import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.text.style.TextAlign
@@ -40,10 +39,10 @@ fun <T> SegmentedControl(
     onSelect: (T) -> Unit,
     label: @Composable (T) -> String,
     modifier: Modifier = Modifier,
-    indicatorColor: Color = MaterialTheme.colorScheme.primary.copy(alpha = 0.16f),
-    selectedContentColor: Color = MaterialTheme.colorScheme.primary,
 ) {
     require(options.isNotEmpty()) { "SegmentedControl needs at least one option" }
+    val indicatorColor = MaterialTheme.colorScheme.primary.copy(alpha = 0.16f)
+    val selectedContentColor = MaterialTheme.colorScheme.primary
     BoxWithConstraints(modifier) {
         val itemWidth = maxWidth / options.size
         val targetFraction = options.indexOf(selected).coerceAtLeast(0) / options.size.toFloat()

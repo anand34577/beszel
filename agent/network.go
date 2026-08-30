@@ -77,6 +77,12 @@ func isValidNic(nicName string, cfg *NicConfig) bool {
 }
 
 func (a *Agent) updateNetworkStats(cacheTimeMs uint16, systemStats *system.Stats) {
+	// Re-read negotiated link speeds on the default interval, so a cable swap
+	// or renegotiation shows up without an agent restart (#link-speed-stale).
+	if cacheTimeMs == defaultDataCacheTimeMs {
+		a.refreshNetworkInterfaceSpeeds()
+	}
+
 	// network stats
 	a.ensureNetInterfacesInitialized()
 

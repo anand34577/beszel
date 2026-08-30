@@ -12,7 +12,9 @@ import dev.beszel.mobile.data.SessionStore
 import dev.beszel.mobile.data.SystemRecord
 import dev.beszel.mobile.data.ThemeMode
 import dev.beszel.mobile.data.computeFleetPulse
+import dev.beszel.mobile.data.friendlyMessage
 import kotlinx.coroutines.CancellationException
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -21,6 +23,7 @@ import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.isActive
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 
 data class AppUiState(
     val isStarting: Boolean = true,
@@ -32,6 +35,8 @@ data class AppUiState(
     val isRefreshing: Boolean = false,
     val lastUpdated: Long? = null,
     val message: String? = null,
+    /** Persists across polls, unlike [message]; drives the fleet screen's error state. */
+    val fleetError: String? = null,
     val themeMode: ThemeMode = ThemeMode.SYSTEM,
     val dynamicColor: Boolean = false,
     /** Fleet-wide CPU samples, one per poll, oldest first. Feeds the pulse header. */
@@ -42,6 +47,8 @@ data class AppUiState(
 }
 
 private const val PULSE_WINDOW = 48
+private const val POLL_INTERVAL_MS = 15_000L
+private const val POLL_INTERVAL_MAX_MS = 120_000L
 
 class AppViewModel(application: Application) : AndroidViewModel(application) {
     private val store = SessionStore(application)
@@ -54,20 +61,24 @@ class AppViewModel(application: Application) : AndroidViewModel(application) {
 
     private var pollingJob: Job? = null
     private val pulseBuffer = ArrayDeque<Float>()
+    // Separate from isRefreshing (which only toggles the spinner for user-initiated
+    // refreshes): guards against a manual refresh racing an in-flight background poll.
+    private var isFetching = false
 
     init {
         restoreSession()
     }
 
     private fun restoreSession() {
-        val session = store.loadSession()
-        if (session == null) {
-            mutableState.update { it.copy(isStarting = false) }
-            return
-        }
-        repository.attach(session)
-        mutableState.update { it.copy(session = session) }
         viewModelScope.launch {
+            // Keystore-backed decrypt is a binder call; keep it off the main thread.
+            val session = withContext(Dispatchers.IO) { store.loadSession() }
+            if (session == null) {
+                mutableState.update { it.copy(isStarting = false) }
+                return@launch
+            }
+            repository.attach(session)
+            mutableState.update { it.copy(session = session) }
             try {
                 val refreshedToken = repository.refreshAuth()
                 val refreshed = repository.updateToken(refreshedToken)
@@ -76,8 +87,14 @@ class AppViewModel(application: Application) : AndroidViewModel(application) {
                 loadDashboard(showSpinner = false)
                 startPolling()
             } catch (error: ApiException) {
-                if (error.statusCode == 401 || error.statusCode == 403) clearSession()
-                else mutableState.update { it.copy(isStarting = false, message = friendlyMessage(error)) }
+                if (error.statusCode == 401 || error.statusCode == 403) {
+                    clearSession()
+                } else {
+                    // Transient hub error (e.g. 502/503): keep the session and keep
+                    // retrying instead of leaving auto-refresh dead for the app's life.
+                    mutableState.update { it.copy(isStarting = false, message = friendlyMessage(error)) }
+                    startPolling()
+                }
             } catch (error: Exception) {
                 mutableState.update { it.copy(isStarting = false, message = friendlyMessage(error)) }
                 startPolling()
@@ -107,9 +124,11 @@ class AppViewModel(application: Application) : AndroidViewModel(application) {
         viewModelScope.launch { loadDashboard(showSpinner = true) }
     }
 
-    private suspend fun loadDashboard(showSpinner: Boolean) {
-        if (!repository.hasSession) return
-        if (mutableState.value.isRefreshing) return
+    /** @return true if the fetch succeeded, so callers (the poll loop) can back off on failure. */
+    private suspend fun loadDashboard(showSpinner: Boolean): Boolean {
+        if (!repository.hasSession) return true
+        if (isFetching) return true
+        isFetching = true
         mutableState.update { it.copy(isRefreshing = showSpinner, message = null) }
         try {
             val dashboard = repository.dashboard()
@@ -127,17 +146,41 @@ class AppViewModel(application: Application) : AndroidViewModel(application) {
                     alertHistory = dashboard.history,
                     lastUpdated = System.currentTimeMillis(),
                     pulse = pulseBuffer.toList(),
+                    fleetError = null,
                 )
             }
+            return true
         } catch (error: ApiException) {
             if (error.statusCode == 401 || error.statusCode == 403) {
                 clearSession("Please sign in again")
+                return true
             } else {
-                mutableState.update { it.copy(isStarting = false, isRefreshing = false, message = friendlyMessage(error)) }
+                // Silent-fail background polls (showSpinner = false): don't spam the
+                // snackbar every 15s while the hub is down. The persistent fleetError
+                // still surfaces a proper error state on the fleet screen.
+                mutableState.update {
+                    it.copy(
+                        isStarting = false,
+                        isRefreshing = false,
+                        message = if (showSpinner) friendlyMessage(error) else it.message,
+                        fleetError = friendlyMessage(error),
+                    )
+                }
+                return false
             }
         } catch (error: Exception) {
             if (error is CancellationException) throw error
-            mutableState.update { it.copy(isStarting = false, isRefreshing = false, message = friendlyMessage(error)) }
+            mutableState.update {
+                it.copy(
+                    isStarting = false,
+                    isRefreshing = false,
+                    message = if (showSpinner) friendlyMessage(error) else it.message,
+                    fleetError = friendlyMessage(error),
+                )
+            }
+            return false
+        } finally {
+            isFetching = false
         }
     }
 
@@ -173,22 +216,14 @@ class AppViewModel(application: Application) : AndroidViewModel(application) {
     private fun startPolling() {
         pollingJob?.cancel()
         pollingJob = viewModelScope.launch {
+            var interval = POLL_INTERVAL_MS
             while (isActive) {
-                delay(15_000)
-                loadDashboard(showSpinner = false)
+                delay(interval)
+                val success = loadDashboard(showSpinner = false)
+                // Back off while the hub is unreachable so a dead hub isn't hammered
+                // every 15s; reset to the normal cadence as soon as it recovers.
+                interval = if (success) POLL_INTERVAL_MS else (interval * 2).coerceAtMost(POLL_INTERVAL_MAX_MS)
             }
-        }
-    }
-
-    private fun friendlyMessage(error: Throwable): String {
-        val raw = error.message.orEmpty()
-        return when {
-            raw.contains("Failed to connect", ignoreCase = true) ||
-                raw.contains("Unable to resolve host", ignoreCase = true) -> "Could not reach this Beszel hub"
-            raw.contains("trust anchor", ignoreCase = true) || raw.contains("certificate", ignoreCase = true) ->
-                "The hub's HTTPS certificate could not be verified"
-            raw.isBlank() -> "Something went wrong"
-            else -> raw
         }
     }
 }

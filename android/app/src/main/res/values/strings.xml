@@ -101,4 +101,15 @@
     <string name="theme_system">System</string>
     <string name="theme_light">Light</string>
     <string name="theme_dark">Dark</string>
+
+    <!-- Status labels -->
+    <string name="status_online">Online</string>
+    <string name="status_offline">Offline</string>
+    <string name="status_paused">Paused</string>
+    <string name="status_pending">Pending</string>
+
+    <!-- Top-level navigation -->
+    <string name="nav_fleet">Fleet</string>
+    <string name="nav_alerts">Alerts</string>
+    <string name="nav_settings">Settings</string>
 </resources>

@@ -15,6 +15,8 @@ import { LazyContainersTable, LazySmartTable, LazySystemdTable } from "./system/
 import { LoadAverageChart } from "./system/charts/load-average-chart"
 import { ContainerIcon, CpuIcon, HardDriveIcon, TerminalSquareIcon } from "lucide-react"
 import { GpuIcon } from "../ui/icons"
+import { Card } from "../ui/card"
+import { Skeleton } from "../ui/skeleton"
 import SystemdTable from "../systemd-table/systemd-table"
 import ContainersTable from "../containers-table/containers-table"
 import NetworkInterfaces from "./system/network-interfaces"
@@ -56,7 +58,27 @@ export default memo(function SystemDetail({ id }: { id: string }) {
 	const [pageBottomExtraMargin, setPageBottomExtraMargin] = useState(0)
 
 	if (!system.id) {
-		return null
+		// System record hasn't resolved yet (deep link, slow fleet load) —
+		// show a page-shaped skeleton instead of a blank screen.
+		return (
+			<div className="grid gap-4 mb-14" aria-busy="true">
+				<Card className="p-5 sm:p-6">
+					<Skeleton className="h-8 w-64 max-w-full" />
+					<div className="mt-4 flex flex-wrap gap-2">
+						<Skeleton className="h-8 w-24 rounded-md" />
+						<Skeleton className="h-8 w-32 rounded-md" />
+						<Skeleton className="h-8 w-28 rounded-md" />
+						<Skeleton className="h-8 w-36 rounded-md" />
+					</div>
+				</Card>
+				<div className="grid xl:grid-cols-2 gap-4">
+					<Skeleton className="h-64 rounded-xl" />
+					<Skeleton className="h-64 rounded-xl" />
+					<Skeleton className="h-64 rounded-xl" />
+					<Skeleton className="h-64 rounded-xl" />
+				</div>
+			</div>
+		)
 	}
 
 	const hasContainers = containerData.length > 0
